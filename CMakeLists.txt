@@ -5,10 +5,14 @@ add_library(
   ${SHARED_OR_STATIC}
   src/spell_handler_interface.cpp
   src/effect_interface.cpp
+  src/policies.cpp
   src/state.cpp
   src/spells.cpp
   src/event.cpp
   src/effects.cpp
+  src/utils.cpp
+  src/shadowbolt_spell_handler.cpp
+  src/corruption_spell_handler.cpp
   src/utils.cpp
   src/spell_handlers.cpp)
 target_include_directories(

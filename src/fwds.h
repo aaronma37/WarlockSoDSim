@@ -22,9 +22,8 @@ struct EffectI;
 
 namespace policies
 {
-void doAction(
-    const std::string& caster_id,
-    std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>& event_queue,
-    const state::State& state,
-    std::ostream& os);
+void act(const std::string& caster_id,
+         std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>& event_queue,
+         const state::State& state,
+         std::ostream& os);
 }

@@ -31,7 +31,7 @@ void GCD::operator()(
     std::ostream& os)
 {
   os << state.time << ": " << caster_id << " is off GCD.\n";
-  policies::doAction(caster_id, event_queue, state, os);
+  policies::act(caster_id, event_queue, state, os);
 }
 
 Cast::Cast(const std::string& caster_id, std::unique_ptr<spells::SpellHandlerI> _spell_handler, double _cast_time)

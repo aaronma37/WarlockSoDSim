@@ -4,6 +4,7 @@
 #include <effects.h>
 #include <event.h>
 #include <fwds.h>
+#include <policies.h>
 #include <spell_handler_interface.h>
 #include <spell_handlers.h>
 #include <spells.h>
@@ -24,29 +25,12 @@
 namespace
 {
 using EventQueue = std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>;
-}
-
-namespace policies
-{
-void doAction(const std::string& caster_id, EventQueue& event_queue, const state::State& state, std::ostream& os)
-{
-  if (state.casters.at(caster_id).policy_id == policies::PolicyID::ONLY_SHADOWBOLTS)
-  {
-    static constexpr int rank = 4;
-    os << state.time << ": " << caster_id << " started casting R" << rank << " Shadowbolt.\n";
-    actions::cast(
-        caster_id, state, event_queue, os, rank, std::make_unique<spells::ShadowboltSpellHandler>(caster_id, rank));
-  }
-}
-}  // namespace policies
-
-namespace
-{
 void runSim()
 {
   const std::string caster_id = "Player";
   state::State state;
-  state.casters[caster_id].policy_id = policies::PolicyID::ONLY_SHADOWBOLTS;
+  // state.casters[caster_id].policy_id = policies::PolicyID::ONLY_SHADOWBOLTS;
+  state.casters[caster_id].policy_id = policies::PolicyID::ONLY_CORRUPTIONS;
   state.casters[caster_id].talents.improved_shadow_bolt = true;
 
   EventQueue event_queue(events::compareEvent);
