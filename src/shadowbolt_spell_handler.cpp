@@ -44,8 +44,10 @@ void ShadowboltSpellHandler::operator()(
       if (state.debuffs.isb)
       {
         state.debuffs.isb_charges -= 1;
-        log.addLogEvent(
-            state.time, "", std::string(" ISB charges remaining: " + std::to_string(state.debuffs.isb_charges)));
+        log.addLogEvent(state.time,
+                        "",
+                        std::string("ISB charges remaining: " + std::to_string(state.debuffs.isb_charges)),
+                        logging::Color::PURPLE);
         if (state.debuffs.isb_charges < 1)
         {
           std::unique_ptr<::effects::RemoveISB> effect = std::make_unique<::effects::RemoveISB>(this->caster_id);
@@ -57,7 +59,7 @@ void ShadowboltSpellHandler::operator()(
   }
   else
   {
-    log.addLogEvent(state.time, "", std::string(" casted R4 Shadowbolt; resisted."));
+    log.addLogEvent(state.time, this->caster_id, std::string(" casted R4 Shadowbolt; resisted."));
   }
 }
 

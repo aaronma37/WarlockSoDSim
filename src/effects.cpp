@@ -17,7 +17,7 @@ void RemoveISB::operator()(
     state.debuffs.isb_charges = 0;
     state.debuffs.isb_mod = 1.0;
     state.debuffs.isb_addr = 0;
-    log.addLogEvent(state.time, caster_id, "ISB dissipated.");
+    log.addLogEvent(state.time, "", "ISB dissipated.", logging::Color::PURPLE);
   }
 }
 
@@ -86,11 +86,11 @@ void CorruptionTick::operator()(
   {
     state.damage_dealt += snapshot_tick_dmg;
     std::string note = " dealt " + std::to_string(snapshot_tick_dmg) + " with a corruption tick.";
-    log.addLogEvent(state.time, this->caster_id, note);
+    log.addLogEvent(state.time, this->caster_id, note, logging::Color::RED);
     if (reset_after)
     {
       state.debuffs.corruption_ids[caster_id] = 0;
-      log.addLogEvent(state.time, this->caster_id, "'s corruption dissipates.");
+      log.addLogEvent(state.time, this->caster_id, " Corruption dissipates.", logging::Color::PURPLE);
     }
   }
 }
@@ -113,7 +113,7 @@ void ProjectileHit::operator()(
     note += "*";
   note += " damage with " + spell_name;
 
-  log.addLogEvent(state.time, this->caster_id, note);
+  log.addLogEvent(state.time, this->caster_id, note, logging::Color::RED);
   state.damage_dealt += dmg;
 }
 
@@ -129,7 +129,7 @@ void NightfallRoll::operator()(
   bool nightfall_proc = (((double)rand() / (RAND_MAX)) <= state.casters[this->caster_id].talents.nightfall_proc);
   if (nightfall_proc)
   {
-    log.addLogEvent(state.time, "", " nightfall proc.");
+    log.addLogEvent(state.time, "", "Nightfall procced.", logging::Color::PURPLE);
     state.casters[this->caster_id].nightfall = true;
   }
 }

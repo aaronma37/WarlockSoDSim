@@ -45,10 +45,9 @@ void runSim()
     event_queue.pop();
   }
 
-  state::postProcess(state);
-
-  std::cout << state << std::endl;
   combat_log.print();
+  state::postProcess(state);
+  std::cout << state << std::endl;
 };
 }  // namespace
 

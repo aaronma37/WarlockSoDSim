@@ -1,14 +1,9 @@
 #pragma once
 
+#include <iomanip>
 #include <iostream>
 #include <string>
 #include <vector>
-namespace
-{
-const std::string red("\033[0;31m");
-const std::string cyan("\033[0;36m");
-const std::string reset("\033[0m");
-}  // namespace
 
 namespace logging
 {
@@ -17,8 +12,30 @@ enum class Color
   WHITE,
   RED,
   PURPLE,
-
+  CYAN,
+  GREEN,
 };
+
+inline std::string colorMap(Color color)
+{
+  const std::string red("\033[0;31m");
+  const std::string purple("\033[0;35m");
+  const std::string cyan("\033[0;36m");
+  const std::string reset("\033[0m");
+  const std::string green("\033[0;32m");
+  if (color == Color::WHITE)
+    return reset;
+  else if (color == Color::RED)
+    return red;
+  else if (color == Color::CYAN)
+    return cyan;
+  else if (color == Color::PURPLE)
+    return purple;
+  else if (color == Color::GREEN)
+    return green;
+  return reset;
+}
+
 struct LogEvent
 {
   LogEvent(double _time, const std::string& _owner, const std::string& _note, Color _color = Color::WHITE)
@@ -45,7 +62,8 @@ struct CombatLog
   void print()
   {
     for (const auto& e : log)
-      std::cout << e.time << ": [" << e.owner << "]" << cyan << e.note << reset << "\n";
+      std::cout << std::fixed << std::setprecision(1) << std::setw(5) << std::right << e.time << ": "
+                << colorMap(e.color) << e.owner << e.note << colorMap(Color::WHITE) << "\n";
   }
 };
 }  // namespace logging
