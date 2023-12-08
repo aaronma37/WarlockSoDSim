@@ -1,5 +1,7 @@
 #pragma once
 
+#include <combat_log.h>
+
 #include <fwds.h>
 #include <queue>
 #include <string>
@@ -14,7 +16,7 @@ struct EffectI
   virtual void operator()(
       std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>&,
       state::State&,
-      std::ostream&) = 0;
+      logging::CombatLog&) = 0;
 
   virtual ~EffectI(){};
 

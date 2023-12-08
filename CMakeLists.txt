@@ -1,3 +1,4 @@
+project(WarlockSoDSim)
 cmake_minimum_required(VERSION 3.16)
 
 add_library(
@@ -14,6 +15,7 @@ add_library(
   src/shadowbolt_spell_handler.cpp
   src/corruption_spell_handler.cpp
   src/utils.cpp
+  src/combat_log.cpp
   src/spell_handlers.cpp)
 target_include_directories(
   interfaces PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/>)
@@ -21,5 +23,5 @@ target_include_directories(
 add_executable(sod_sim src/main.cpp)
 target_link_libraries(sod_sim PUBLIC interfaces)
 
-target_compile_options(sod_sim PUBLIC -fsanitize=address -fopenmp=libomp)
-target_link_options(sod_sim PUBLIC -fsanitize=address -fopenmp=libomp)
+target_compile_options(sod_sim PUBLIC -fsanitize=address -fopenmp=libomp -O3)
+target_link_options(sod_sim PUBLIC -fsanitize=address -fopenmp=libomp -O3)
