@@ -7,7 +7,7 @@
 
 namespace spells {
 struct ShadowboltSpellHandler : public spells::SpellHandlerI {
-    ShadowboltSpellHandler (std::string _caster_id, int _rank);
+    ShadowboltSpellHandler (std::string _caster_id, int _rank, double _cast_time);
     int rank;
 
     void operator() (

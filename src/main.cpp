@@ -22,39 +22,35 @@
 #include <unordered_map>
 #include <vector>
 
-namespace
-{
-using EventQueue = std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>;
-void runSim()
-{
-  const std::string caster_id = "Player";
-  state::State state;
-  // state.casters[caster_id].policy_id = policies::PolicyID::ONLY_SHADOWBOLTS;
-  state.casters[caster_id].policy_id = policies::PolicyID::ONLY_CORRUPTIONS;
-  state.casters[caster_id].talents.improved_shadow_bolt = true;
+namespace {
+using EventQueue =
+std::priority_queue<events::Event, std::vector<events::Event>, decltype (&events::compareEvent)>;
+void runSim () {
+    const std::string caster_id = "Player";
+    state::State state;
+    // state.casters[caster_id].policy_id = policies::PolicyID::ONLY_SHADOWBOLTS;
+    // state.casters[caster_id].policy_id = policies::PolicyID::ONLY_CORRUPTIONS;
+    state.casters[caster_id].policy_id = policies::PolicyID::CORRUPTION_OVER_SHADOWBOLT;
+    state.casters[caster_id].talents.improved_shadow_bolt = true;
 
-  EventQueue event_queue(events::compareEvent);
-  event_queue.push(events::Event(1, std::make_unique<::effects::GCD>(caster_id)));
+    EventQueue event_queue (events::compareEvent);
+    event_queue.push (events::Event (1, std::make_unique<::effects::GCD> (caster_id)));
 
-  while (state.time < 60 && !event_queue.empty())
-  {
-    auto& event = event_queue.top();
-    event.resolve(event_queue, state);
-    event_queue.pop();
-  }
+    while (state.time < 60 && !event_queue.empty ()) {
+        auto& event = event_queue.top ();
+        event.resolve (event_queue, state);
+        event_queue.pop ();
+    }
 
-  state::postProcess(state);
+    state::postProcess (state);
 
-  std::cout << state << std::endl;
+    std::cout << state << std::endl;
 };
-}  // namespace
+} // namespace
 
-int main()
-{
-  std::srand(1000);
+int main () {
+    std::srand (1000);
 #pragma omp parallel num_threads(1)
-  {
-    runSim();
-  }
-  return 0;
+    { runSim (); }
+    return 0;
 }
