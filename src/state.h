@@ -10,9 +10,33 @@ namespace state
 {
 struct Talents
 {
+  enum class MDType
+  {
+    SUCCUBUS,
+    NONE
+  };
+  enum class DSType
+  {
+    SUCCUBUS,
+    IMP,
+    NONE
+  };
+
+  // Affliction
+  int suppression = 5;
+  int improved_corruption = 5;
+  int shadow_mastery = 5;
+
+  // Demonology
+  DSType demonic_sacrifice = DSType::SUCCUBUS;
+  MDType master_demonologist = MDType::SUCCUBUS;
+
+  // Destruction
   bool improved_shadow_bolt = true;
+  int bane = 5;
   bool ruin = true;
-  double nightfall_proc = 0.04;
+  int nightfall = 2;
+  int devastation = 5;
 };
 
 struct Caster

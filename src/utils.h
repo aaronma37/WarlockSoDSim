@@ -1,9 +1,24 @@
 #pragma once
+#include <state.h>
 
 #include <random>
 
 namespace utils
 {
+enum class SpellSchool
+{
+  SHADOW,
+  FIRE,
+};
+
+enum class Specialization
+{
+  DESTRUCTION,
+  AFFLICTION,
+  DEMONOLOGY,
+  NONE,
+};
+
 struct CastPointResult
 {
   bool hit;
@@ -11,9 +26,19 @@ struct CastPointResult
   bool crit;
 };
 
-inline CastPointResult nonBinaryCast(double crit_chance, double hit_chance)
+inline CastPointResult nonBinaryCast(double crit_chance,
+                                     double hit_chance,
+                                     SpellSchool school,
+                                     Specialization specialization,
+                                     const state::Talents& talents)
 {
   CastPointResult result;
+
+  if (specialization == Specialization::AFFLICTION)
+    hit_chance += .02 * talents.suppression;
+
+  if (specialization == Specialization::DESTRUCTION)
+    crit_chance += .01 * talents.devastation;
 
   result.hit = (((double)rand() / (RAND_MAX)) <= hit_chance);
   result.crit = (((double)rand() / (RAND_MAX)) <= crit_chance);
@@ -29,19 +54,44 @@ inline CastPointResult nonBinaryCast(double crit_chance, double hit_chance)
   return result;
 }
 
-inline double nonBinaryDamageCalculation(double lb,
+inline double nonBinaryDamageCalculation(CastPointResult& result,
+                                         double lb,
                                          double ub,
                                          double spell_power,
+                                         SpellSchool school,
+                                         Specialization specialization,
                                          double coeff,
-                                         double crit_mod,
-                                         double partial_resist_mod,
+                                         const state::Talents& talents,
                                          std::vector<double> debuff_mods)
 {
   double dmg = lb + (rand() % static_cast<int>(ub - lb + 1)) + coeff * spell_power;
+
+  double crit_mod = 1.0;
+  if (result.crit)
+  {
+    if (talents.ruin && specialization == Specialization::DESTRUCTION)
+      crit_mod = 2.0;
+    else
+      crit_mod = 1.5;
+  }
+
   dmg *= crit_mod;
-  dmg *= partial_resist_mod;
+  dmg *= result.partial_resist_mod;
   for (auto mod : debuff_mods)
     dmg *= mod;
+
+  if (talents.demonic_sacrifice == state::Talents::DSType::SUCCUBUS && school == SpellSchool::SHADOW)
+    dmg *= 1.15;
+
+  if (talents.demonic_sacrifice == state::Talents::DSType::IMP && school == SpellSchool::FIRE)
+    dmg *= 1.15;
+
+  if (talents.master_demonologist == state::Talents::MDType::SUCCUBUS)
+    dmg *= 1.10;
+
+  if (school == SpellSchool::SHADOW)
+    dmg *= (1.0 + talents.shadow_mastery * .02);
+
   return dmg;
 }
 }  // namespace utils

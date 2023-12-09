@@ -14,6 +14,7 @@ enum class Color
   PURPLE,
   CYAN,
   GREEN,
+  GRAY,
 };
 
 inline std::string colorMap(Color color)
@@ -21,8 +22,9 @@ inline std::string colorMap(Color color)
   const std::string red("\033[0;31m");
   const std::string purple("\033[0;35m");
   const std::string cyan("\033[0;36m");
-  const std::string reset("\033[0m");
   const std::string green("\033[0;32m");
+  const std::string gray("\e[38;5;250m");
+  const std::string reset("\033[0m");
   if (color == Color::WHITE)
     return reset;
   else if (color == Color::RED)
@@ -33,6 +35,8 @@ inline std::string colorMap(Color color)
     return purple;
   else if (color == Color::GREEN)
     return green;
+  else if (color == Color::GRAY)
+    return gray;
   return reset;
 }
 

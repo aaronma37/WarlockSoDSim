@@ -30,7 +30,7 @@ void GCD::operator()(
     state::State& state,
     logging::CombatLog& log)
 {
-  log.addLogEvent(state.time, caster_id, " is off GCD.");
+  log.addLogEvent(state.time, caster_id, " is able to cast.", logging::Color::GRAY);
   policies::act(caster_id, event_queue, state, log);
 }
 
@@ -44,7 +44,7 @@ void Cast::operator()(
     logging::CombatLog& log)
 {
   static constexpr double gcd = 1.5;
-  event_queue.push(events::Event(state.time + std::max<double>(gcd - spell_handler->cast_time, 0),
+  event_queue.push(events::Event(state.time + std::min<double>(spell_handler->cast_time, gcd),
                                  std::make_unique<::effects::GCD>(this->caster_id)));
   (*spell_handler)(event_queue, state, log);
 }
@@ -63,13 +63,18 @@ void ApplyISB::operator()(
   state.debuffs.isb_mod = 1.2;
   std::unique_ptr<::effects::RemoveISB> effect = std::make_unique<::effects::RemoveISB>(caster_id);
   state.debuffs.isb_addr = effect.get();
-  log.addLogEvent(state.time, caster_id, " ISB refreshed.");
+  log.addLogEvent(state.time, caster_id, " ISB refreshed.", logging::Color::PURPLE);
   event_queue.push(events::Event(state.time + 12, std::move(effect)));
 }
 
-CorruptionTick::CorruptionTick(
-    std::string _caster_id, int _rank, double time, double _snapshot_tick_dmg, bool _reset_after)
+PeriodicDamageTick::PeriodicDamageTick(std::string _caster_id,
+                                       std::string _spell_name,
+                                       int _rank,
+                                       double time,
+                                       double _snapshot_tick_dmg,
+                                       bool _reset_after)
   : EffectI(_caster_id)
+  , spell_name(_spell_name)
   , rank(_rank)
   , initial_cast_time(time)
   , snapshot_tick_dmg(_snapshot_tick_dmg)
@@ -77,7 +82,7 @@ CorruptionTick::CorruptionTick(
 {
 }
 
-void CorruptionTick::operator()(
+void PeriodicDamageTick::operator()(
     std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>& event_queue,
     state::State& state,
     logging::CombatLog& log)
@@ -85,12 +90,12 @@ void CorruptionTick::operator()(
   if (state.debuffs.corruption_ids[caster_id] == initial_cast_time)
   {
     state.damage_dealt += snapshot_tick_dmg;
-    std::string note = " dealt " + std::to_string(snapshot_tick_dmg) + " with a corruption tick.";
+    std::string note = " dealt " + std::to_string(snapshot_tick_dmg) + " with a " + spell_name + " tick.";
     log.addLogEvent(state.time, this->caster_id, note, logging::Color::RED);
     if (reset_after)
     {
       state.debuffs.corruption_ids[caster_id] = 0;
-      log.addLogEvent(state.time, this->caster_id, " Corruption dissipates.", logging::Color::PURPLE);
+      log.addLogEvent(state.time, this->caster_id, " " + spell_name + " dissipates.", logging::Color::PURPLE);
     }
   }
 }
@@ -126,7 +131,7 @@ void NightfallRoll::operator()(
     state::State& state,
     logging::CombatLog& log)
 {
-  bool nightfall_proc = (((double)rand() / (RAND_MAX)) <= state.casters[this->caster_id].talents.nightfall_proc);
+  bool nightfall_proc = (((double)rand() / (RAND_MAX)) <= state.casters[this->caster_id].talents.nightfall * .02);
   if (nightfall_proc)
   {
     log.addLogEvent(state.time, "", "Nightfall procced.", logging::Color::PURPLE);

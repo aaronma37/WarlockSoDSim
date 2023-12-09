@@ -21,6 +21,18 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+namespace
+{
+state::State basicBuild(std::string caster_id)
+{
+  state::State state;
+  // state.casters[caster_id].policy_id = policies::PolicyID::ONLY_SHADOWBOLTS;
+  // state.casters[caster_id].policy_id = policies::PolicyID::ONLY_CORRUPTIONS;
+  state.casters[caster_id].policy_id = policies::PolicyID::CORRUPTION_OVER_SHADOWBOLT;
+  return state;
+}
+
+}  // namespace
 
 namespace
 {
@@ -28,17 +40,13 @@ using EventQueue = std::priority_queue<events::Event, std::vector<events::Event>
 void runSim()
 {
   const std::string caster_id = "Player";
-  state::State state;
   logging::CombatLog combat_log;
-  // state.casters[caster_id].policy_id = policies::PolicyID::ONLY_SHADOWBOLTS;
-  // state.casters[caster_id].policy_id = policies::PolicyID::ONLY_CORRUPTIONS;
-  state.casters[caster_id].policy_id = policies::PolicyID::CORRUPTION_OVER_SHADOWBOLT;
-  state.casters[caster_id].talents.improved_shadow_bolt = true;
+  state::State state = basicBuild(caster_id);
 
   EventQueue event_queue(events::compareEvent);
   event_queue.push(events::Event(1, std::make_unique<::effects::GCD>(caster_id)));
 
-  while (state.time < 60 && !event_queue.empty())
+  while (state.time < 120 && !event_queue.empty())
   {
     auto& event = event_queue.top();
     event.resolve(event_queue, state, combat_log);

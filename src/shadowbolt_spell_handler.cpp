@@ -1,4 +1,8 @@
 #include <spell_handlers.h>
+namespace
+{
+using SpellMetadata = spells::Shadowbolt;
+}
 
 namespace spells
 {
@@ -13,25 +17,25 @@ void ShadowboltSpellHandler::operator()(
     logging::CombatLog& log)
 {
   const auto& caster_state = state.casters[this->caster_id];
-  utils::CastPointResult result =
-      utils::nonBinaryCast(state.casters[this->caster_id].crit_chance, state.casters[this->caster_id].hit_chance);
+  utils::CastPointResult result = utils::nonBinaryCast(state.casters[this->caster_id].crit_chance,
+                                                       state.casters[this->caster_id].hit_chance,
+                                                       SpellMetadata::spell_school,
+                                                       SpellMetadata::specialization,
+                                                       caster_state.talents);
 
   if (result.hit)
   {
     log.addLogEvent(state.time, this->caster_id, std::string(" casted R" + std::to_string(rank) + " Shadowbolt; hit."));
-    double crit_mod = 1.0;
-    if (result.crit)
-      crit_mod = 1.5;
 
-    std::vector<double> debuff_mods{};
-
-    double dmg = utils::nonBinaryDamageCalculation(spells::Shadowbolt::min[rank],
-                                                   spells::Shadowbolt::max[rank],
+    double dmg = utils::nonBinaryDamageCalculation(result,
+                                                   SpellMetadata::min[rank],
+                                                   SpellMetadata::max[rank],
                                                    caster_state.spell_power,
-                                                   spells::Shadowbolt::coefficient,
-                                                   crit_mod,
-                                                   result.partial_resist_mod,
-                                                   debuff_mods);
+                                                   SpellMetadata::spell_school,
+                                                   SpellMetadata::specialization,
+                                                   SpellMetadata::coefficient,
+                                                   caster_state.talents,
+                                                   {});
     event_queue.push(events::Event(
         state.time, std::make_unique<::effects::ProjectileHit>(this->caster_id, "Shadowbolt", dmg, result)));
 

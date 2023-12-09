@@ -66,10 +66,16 @@ struct NightfallRoll : public EffectI
       logging::CombatLog& log) override;
 };
 
-struct CorruptionTick : public EffectI
+struct PeriodicDamageTick : public EffectI
 {
-  CorruptionTick(std::string _caster_id, int _rank, double time, double _snapshot_tick_dmg, bool _reset_after = false);
+  PeriodicDamageTick(std::string _caster_id,
+                     std::string _spell_name,
+                     int _rank,
+                     double time,
+                     double _snapshot_tick_dmg,
+                     bool _reset_after = false);
 
+  std::string spell_name;
   int rank;
   double initial_cast_time;
   double snapshot_tick_dmg;
