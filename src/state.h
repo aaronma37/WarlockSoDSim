@@ -8,6 +8,13 @@
 
 namespace state
 {
+struct Runes
+{
+  static constexpr double demonic_tactics_crit_value = .1;
+  static constexpr double demonic_tactics_off = 0;
+  double demonic_tactics = demonic_tactics_crit_value;  // .1 or 0
+};
+
 struct Talents
 {
   enum class MDType
@@ -43,12 +50,14 @@ struct Caster
 {
   policies::PolicyID policy_id;
   Talents talents;
+  Runes runes;
 
   // Dynamic stats
   double crit_chance = .3;
   double hit_chance = .95;
   int spell_power = 50;
   bool nightfall = false;
+  int mana = 1000;
 };
 
 struct Debuffs
@@ -59,6 +68,8 @@ struct Debuffs
   void* isb_addr = 0;
 
   std::unordered_map<std::string, double> corruption_ids;
+
+  double shadow_vulnerability = 5;  // Shadow priest 0-5, note at 25, SP can only have 1 pt
 };
 
 struct State

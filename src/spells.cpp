@@ -38,10 +38,22 @@ Shadowbolt::Shadowbolt()
   cast_time[8] = 3.0;
   cast_time[9] = 3.0;
   cast_time[10] = 3.0;
+
+  mana_cost[1] = 25;
+  mana_cost[2] = 40;
+  mana_cost[3] = 70;
+  mana_cost[4] = 110;
+  mana_cost[5] = 160;
+  mana_cost[6] = 210;
+  mana_cost[7] = 265;
+  mana_cost[8] = 315;
+  mana_cost[9] = 370;
+  mana_cost[10] = 380;
 }
 std::unordered_map<int, int> Shadowbolt::min;
 std::unordered_map<int, int> Shadowbolt::max;
 std::unordered_map<int, double> Shadowbolt::cast_time;
+std::unordered_map<int, int> Shadowbolt::mana_cost;
 Shadowbolt Shadowbolt;
 
 // Initialize Corruption
@@ -49,8 +61,20 @@ Corruption::Corruption()
 {
   tick_dmg[3] = 37;
   cast_time[3] = 2.0;
+  mana_cost[3] = 100;
 }
 std::unordered_map<int, int> Corruption::tick_dmg;
 std::unordered_map<int, double> Corruption::cast_time;
+std::unordered_map<int, int> Corruption::mana_cost;
 Corruption corruption;
+
+// Initialize Life tap
+LifeTap::LifeTap()
+{
+
+  conversion[2] = 75;
+}
+
+std::unordered_map<int, double> LifeTap::conversion;
+LifeTap lifetap;
 }  // namespace spells

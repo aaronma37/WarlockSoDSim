@@ -2,14 +2,11 @@
 
 namespace effects
 {
-RemoveISB::RemoveISB(const std::string& caster_id) : EffectI(caster_id)
-{
-}
+RemoveISB::RemoveISB(const std::string& caster_id) : EffectI(caster_id) {}
 
-void RemoveISB::operator()(
-    std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>& event_queue,
-    state::State& state,
-    logging::CombatLog& log)
+void RemoveISB::operator()(std::priority_queue<events::Event, std::vector<events::Event>,
+                                               decltype(&events::compareEvent)>& event_queue,
+                           state::State& state, logging::CombatLog& log)
 {
   if (state.debuffs.isb_addr == this)
   {
@@ -21,42 +18,36 @@ void RemoveISB::operator()(
   }
 }
 
-GCD::GCD(const std::string& caster_id) : EffectI(caster_id)
-{
-}
+GCD::GCD(const std::string& caster_id) : EffectI(caster_id) {}
 
-void GCD::operator()(
-    std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>& event_queue,
-    state::State& state,
-    logging::CombatLog& log)
+void GCD::operator()(std::priority_queue<events::Event, std::vector<events::Event>,
+                                         decltype(&events::compareEvent)>& event_queue,
+                     state::State& state, logging::CombatLog& log)
 {
   log.addLogEvent(state.time, caster_id, " is able to cast.", logging::Color::GRAY);
   policies::act(caster_id, event_queue, state, log);
 }
 
-Cast::Cast(const std::string& caster_id, std::unique_ptr<spells::SpellHandlerI> _spell_handler, double _cast_time)
-  : EffectI(caster_id), spell_handler(std::move(_spell_handler))
+Cast::Cast(const std::string& caster_id, std::unique_ptr<spells::SpellHandlerI> _spell_handler,
+           double _cast_time)
+    : EffectI(caster_id), spell_handler(std::move(_spell_handler))
 {
 }
-void Cast::operator()(
-    std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>& event_queue,
-    state::State& state,
-    logging::CombatLog& log)
+void Cast::operator()(std::priority_queue<events::Event, std::vector<events::Event>,
+                                          decltype(&events::compareEvent)>& event_queue,
+                      state::State& state, logging::CombatLog& log)
 {
   static constexpr double gcd = 1.5;
-  event_queue.push(events::Event(state.time + std::min<double>(spell_handler->cast_time, gcd),
+  event_queue.push(events::Event(state.time + std::max<double>(spell_handler->cast_time, gcd),
                                  std::make_unique<::effects::GCD>(this->caster_id)));
   (*spell_handler)(event_queue, state, log);
 }
 
-ApplyISB::ApplyISB(std::string _caster_id) : EffectI(_caster_id)
-{
-}
+ApplyISB::ApplyISB(std::string _caster_id) : EffectI(_caster_id) {}
 
-void ApplyISB::operator()(
-    std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>& event_queue,
-    state::State& state,
-    logging::CombatLog& log)
+void ApplyISB::operator()(std::priority_queue<events::Event, std::vector<events::Event>,
+                                              decltype(&events::compareEvent)>& event_queue,
+                          state::State& state, logging::CombatLog& log)
 {
   state.debuffs.isb = true;
   state.debuffs.isb_charges = 4;
@@ -67,25 +58,20 @@ void ApplyISB::operator()(
   event_queue.push(events::Event(state.time + 12, std::move(effect)));
 }
 
-PeriodicDamageTick::PeriodicDamageTick(std::string _caster_id,
-                                       std::string _spell_name,
-                                       int _rank,
-                                       double time,
-                                       double _snapshot_tick_dmg,
-                                       bool _reset_after)
-  : EffectI(_caster_id)
-  , spell_name(_spell_name)
-  , rank(_rank)
-  , initial_cast_time(time)
-  , snapshot_tick_dmg(_snapshot_tick_dmg)
-  , reset_after(_reset_after)
+PeriodicDamageTick::PeriodicDamageTick(std::string _caster_id, std::string _spell_name, int _rank,
+                                       double time, double _snapshot_tick_dmg, bool _reset_after)
+    : EffectI(_caster_id),
+      spell_name(_spell_name),
+      rank(_rank),
+      initial_cast_time(time),
+      snapshot_tick_dmg(_snapshot_tick_dmg),
+      reset_after(_reset_after)
 {
 }
 
-void PeriodicDamageTick::operator()(
-    std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>& event_queue,
-    state::State& state,
-    logging::CombatLog& log)
+void PeriodicDamageTick::operator()(std::priority_queue<events::Event, std::vector<events::Event>,
+                                                        decltype(&events::compareEvent)>& event_queue,
+                                    state::State& state, logging::CombatLog& log)
 {
   if (state.debuffs.corruption_ids[caster_id] == initial_cast_time)
   {
@@ -100,18 +86,15 @@ void PeriodicDamageTick::operator()(
   }
 }
 
-ProjectileHit::ProjectileHit(std::string _caster_id,
-                             std::string _spell_name,
-                             double _dmg,
+ProjectileHit::ProjectileHit(std::string _caster_id, std::string _spell_name, double _dmg,
                              utils::CastPointResult _cast_point_result)
-  : EffectI(_caster_id), spell_name(_spell_name), dmg(_dmg), cast_point_result(_cast_point_result)
+    : EffectI(_caster_id), spell_name(_spell_name), dmg(_dmg), cast_point_result(_cast_point_result)
 {
 }
 
-void ProjectileHit::operator()(
-    std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>& event_queue,
-    state::State& state,
-    logging::CombatLog& log)
+void ProjectileHit::operator()(std::priority_queue<events::Event, std::vector<events::Event>,
+                                                   decltype(&events::compareEvent)>& event_queue,
+                               state::State& state, logging::CombatLog& log)
 {
   std::string note = " dealt " + std::to_string(dmg);
   if (cast_point_result.crit)
@@ -122,16 +105,14 @@ void ProjectileHit::operator()(
   state.damage_dealt += dmg;
 }
 
-NightfallRoll::NightfallRoll(std::string _caster_id) : EffectI(_caster_id)
-{
-}
+NightfallRoll::NightfallRoll(std::string _caster_id) : EffectI(_caster_id) {}
 
-void NightfallRoll::operator()(
-    std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>& event_queue,
-    state::State& state,
-    logging::CombatLog& log)
+void NightfallRoll::operator()(std::priority_queue<events::Event, std::vector<events::Event>,
+                                                   decltype(&events::compareEvent)>& event_queue,
+                               state::State& state, logging::CombatLog& log)
 {
-  bool nightfall_proc = (((double)rand() / (RAND_MAX)) <= state.casters[this->caster_id].talents.nightfall * .02);
+  bool nightfall_proc =
+      (((double)rand() / (RAND_MAX)) <= state.casters[this->caster_id].talents.nightfall * .02);
   if (nightfall_proc)
   {
     log.addLogEvent(state.time, "", "Nightfall procced.", logging::Color::PURPLE);

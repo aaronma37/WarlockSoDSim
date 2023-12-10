@@ -3,10 +3,25 @@
 
 namespace
 {
-using EventQueue = std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>;
+using EventQueue =
+    std::priority_queue<events::Event, std::vector<events::Event>, decltype(&events::compareEvent)>;
 
-void castShadowbolt(
-    const std::string& caster_id, EventQueue& event_queue, state::State& state, logging::CombatLog& log, int rank)
+void castLifeTap(const std::string& caster_id, EventQueue& event_queue, state::State& state,
+                 logging::CombatLog& log, int rank)
+{
+  double cast_time = spells::LifeTap::cast_time;
+  log.addLogEvent(state.time, caster_id, " started casting R" + std::to_string(rank) + " Lifetap.");
+  actions::cast(caster_id,
+                cast_time,
+                state,
+                event_queue,
+                log,
+                rank,
+                std::make_unique<spells::LifeTapSpellHandler>(caster_id, rank, cast_time));
+}
+
+void castShadowbolt(const std::string& caster_id, EventQueue& event_queue, state::State& state,
+                    logging::CombatLog& log, int rank)
 {
   log.addLogEvent(state.time, caster_id, " started casting R" + std::to_string(rank) + " Shadowbolt.");
   double cast_time = spells::Shadowbolt::cast_time[rank];
@@ -25,8 +40,8 @@ void castShadowbolt(
                 std::make_unique<spells::ShadowboltSpellHandler>(caster_id, rank, cast_time));
 }
 
-void castCorruption(
-    const std::string& caster_id, EventQueue& event_queue, state::State& state, logging::CombatLog& log, int rank)
+void castCorruption(const std::string& caster_id, EventQueue& event_queue, state::State& state,
+                    logging::CombatLog& log, int rank)
 {
   double cast_time = spells::Corruption::cast_time[rank];
   cast_time -= state.casters.at(caster_id).talents.improved_corruption * .4;
@@ -42,38 +57,50 @@ void castCorruption(
 }
 
 // POLICIES
-void OnlyShadowbolts(const std::string& caster_id,
-                     EventQueue& event_queue,
-                     state::State& state,
+void OnlyShadowbolts(const std::string& caster_id, EventQueue& event_queue, state::State& state,
                      logging::CombatLog& log)
 {
-  static constexpr int rank = 4;
-  castShadowbolt(caster_id, event_queue, state, log, rank);
+  static constexpr int shadow_bolt_rank = 4;
+  static constexpr int life_tap_rank = 2;
+
+  if (state.casters[caster_id].mana >= spells::Shadowbolt::mana_cost[shadow_bolt_rank])
+    castShadowbolt(caster_id, event_queue, state, log, shadow_bolt_rank);
+  else
+    castLifeTap(caster_id, event_queue, state, log, life_tap_rank);
 }
 
-void OnlyCorruptions(const std::string& caster_id,
-                     EventQueue& event_queue,
-                     state::State& state,
+void OnlyCorruptions(const std::string& caster_id, EventQueue& event_queue, state::State& state,
                      logging::CombatLog& log)
 {
-  static constexpr int rank = 3;
-  castCorruption(caster_id, event_queue, state, log, rank);
+  static constexpr int corruption_rank = 3;
+  static constexpr int life_tap_rank = 2;
+
+  if (state.casters[caster_id].mana >= spells::Corruption::mana_cost[corruption_rank])
+    castCorruption(caster_id, event_queue, state, log, corruption_rank);
+  else
+    castLifeTap(caster_id, event_queue, state, log, life_tap_rank);
 }
 
-void CorruptionOverShadowbolt(const std::string& caster_id,
-                              EventQueue& event_queue,
-                              state::State& state,
+void CorruptionOverShadowbolt(const std::string& caster_id, EventQueue& event_queue, state::State& state,
                               logging::CombatLog& log)
 {
+  static constexpr int life_tap_rank = 2;
+  static constexpr int corruption_rank = 3;
+  static constexpr int shadow_bolt_rank = 4;
+
   if (state.debuffs.corruption_ids.count(caster_id) == 0 || state.debuffs.corruption_ids.at(caster_id) == 0)
   {
-    static constexpr int rank = 3;
-    castCorruption(caster_id, event_queue, state, log, rank);
+    if (state.casters[caster_id].mana >= spells::Corruption::mana_cost[corruption_rank])
+      castCorruption(caster_id, event_queue, state, log, corruption_rank);
+    else
+      castLifeTap(caster_id, event_queue, state, log, life_tap_rank);
   }
   else
   {
-    static constexpr int rank = 4;
-    castShadowbolt(caster_id, event_queue, state, log, rank);
+    if (state.casters[caster_id].mana < spells::Shadowbolt::mana_cost[shadow_bolt_rank])
+      castShadowbolt(caster_id, event_queue, state, log, shadow_bolt_rank);
+    else
+      castLifeTap(caster_id, event_queue, state, log, life_tap_rank);
   }
 }
 

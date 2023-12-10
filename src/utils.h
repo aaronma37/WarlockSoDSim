@@ -26,11 +26,9 @@ struct CastPointResult
   bool crit;
 };
 
-inline CastPointResult nonBinaryCast(double crit_chance,
-                                     double hit_chance,
-                                     SpellSchool school,
-                                     Specialization specialization,
-                                     const state::Talents& talents)
+inline CastPointResult nonBinaryCast(double crit_chance, double hit_chance, SpellSchool school,
+                                     Specialization specialization, const state::Talents& talents,
+                                     const state::Runes& runes)
 {
   CastPointResult result;
 
@@ -39,6 +37,8 @@ inline CastPointResult nonBinaryCast(double crit_chance,
 
   if (specialization == Specialization::DESTRUCTION)
     crit_chance += .01 * talents.devastation;
+
+  crit_chance += runes.demonic_tactics;
 
   result.hit = (((double)rand() / (RAND_MAX)) <= hit_chance);
   result.crit = (((double)rand() / (RAND_MAX)) <= crit_chance);
@@ -54,15 +54,9 @@ inline CastPointResult nonBinaryCast(double crit_chance,
   return result;
 }
 
-inline double nonBinaryDamageCalculation(CastPointResult& result,
-                                         double lb,
-                                         double ub,
-                                         double spell_power,
-                                         SpellSchool school,
-                                         Specialization specialization,
-                                         double coeff,
-                                         const state::Talents& talents,
-                                         std::vector<double> debuff_mods)
+inline double nonBinaryDamageCalculation(CastPointResult& result, double lb, double ub, double spell_power,
+                                         SpellSchool school, Specialization specialization, double coeff,
+                                         const state::Talents& talents, state::Debuffs& debuffs)
 {
   double dmg = lb + (rand() % static_cast<int>(ub - lb + 1)) + coeff * spell_power;
 
@@ -77,8 +71,6 @@ inline double nonBinaryDamageCalculation(CastPointResult& result,
 
   dmg *= crit_mod;
   dmg *= result.partial_resist_mod;
-  for (auto mod : debuff_mods)
-    dmg *= mod;
 
   if (talents.demonic_sacrifice == state::Talents::DSType::SUCCUBUS && school == SpellSchool::SHADOW)
     dmg *= 1.15;
@@ -90,7 +82,10 @@ inline double nonBinaryDamageCalculation(CastPointResult& result,
     dmg *= 1.10;
 
   if (school == SpellSchool::SHADOW)
+  {
     dmg *= (1.0 + talents.shadow_mastery * .02);
+    dmg *= (1.0 + debuffs.shadow_vulnerability * .03);
+  }
 
   return dmg;
 }

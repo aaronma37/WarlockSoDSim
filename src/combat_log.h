@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 
+static constexpr bool k_record = false;
+static constexpr bool k_print = false;
+
 namespace logging
 {
 enum class Color
@@ -43,7 +46,7 @@ inline std::string colorMap(Color color)
 struct LogEvent
 {
   LogEvent(double _time, const std::string& _owner, const std::string& _note, Color _color = Color::WHITE)
-    : time(_time), owner(_owner), note(_note), color(_color)
+      : time(_time), owner(_owner), note(_note), color(_color)
   {
   }
   LogEvent() = delete;
@@ -58,16 +61,19 @@ struct CombatLog
 {
   std::vector<LogEvent> log;
 
-  void addLogEvent(double _time, const std::string& _owner, const std::string& _note, Color _color = Color::WHITE)
+  void addLogEvent(double _time, const std::string& _owner, const std::string& _note,
+                   Color _color = Color::WHITE)
   {
-    log.push_back(LogEvent(_time, _owner, _note, _color));
+    if constexpr (k_record)
+      log.push_back(LogEvent(_time, _owner, _note, _color));
   }
 
   void print()
   {
-    for (const auto& e : log)
-      std::cout << std::fixed << std::setprecision(1) << std::setw(5) << std::right << e.time << ": "
-                << colorMap(e.color) << e.owner << e.note << colorMap(Color::WHITE) << "\n";
+    if constexpr (k_print)
+      for (const auto& e : log)
+        std::cout << std::fixed << std::setprecision(1) << std::setw(5) << std::right << e.time << ": "
+                  << colorMap(e.color) << e.owner << e.note << colorMap(Color::WHITE) << "\n";
   }
 };
 }  // namespace logging

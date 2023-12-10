@@ -14,6 +14,7 @@ add_library(
   src/utils.cpp
   src/shadowbolt_spell_handler.cpp
   src/corruption_spell_handler.cpp
+  src/life_tap_spell_handler.cpp
   src/utils.cpp
   src/combat_log.cpp
   src/spell_handlers.cpp)
@@ -23,5 +24,8 @@ target_include_directories(
 add_executable(sod_sim src/main.cpp)
 target_link_libraries(sod_sim PUBLIC interfaces)
 
-target_compile_options(sod_sim PUBLIC -fsanitize=address -fopenmp=libomp -O3)
-target_link_options(sod_sim PUBLIC -fsanitize=address -fopenmp=libomp -O3)
+target_compile_options(sod_sim PUBLIC -fsanitize=address -fopenmp -O3 -std=c++20)
+target_link_options(sod_sim PUBLIC -fsanitize=address -fopenmp -O3 -std=c++20)
+
+# target_compile_options(sod_sim PUBLIC -fopenmp -O3 -std=c++20 -ffast-math)
+# target_link_options(sod_sim PUBLIC  -fopenmp -O3 -std=c++20 -ffast-math)
